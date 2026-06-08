@@ -63,7 +63,9 @@ def get_shipment(id: int) -> dict[str, Any]:
 
 
 @app.post("/shipment")
-def submit_shipment(content: str, weight: float) -> dict[str, int]:
+def submit_shipment(data: dict[str, Any]) -> dict[str, Any]:
+    content = data["content"]
+    weight = data["weight"]
 
     if weight > 25:
         raise HTTPException(
