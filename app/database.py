@@ -1,37 +1,35 @@
 import sqlite3
 from typing import Any
 
-from learn_python.app.schemas import ShipmentCreate, ShipmentUpdate
+from app.schemas import ShipmentCreate, ShipmentUpdate  # type: ignore
 
 
 class Database:
     def __init__(self):
-        # make the connection
-        self.conn = sqlite3.connect("sqlite.db")
-        # Get cursoe to execute queries and fetch data
+        # Make connection with database
+        self.conn = sqlite3.connect("sqlite.db", check_same_thread=False)
+        # Get cursor to execute queries and fetch data
         self.cur = self.conn.cursor()
-        # Create table if not exists
-        self.create_table("shipment")
+        self.create_table()
 
-    def create_table(self, name: str):
-        self.cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS ? (
-               id INTEGER PRIMARY KEY,
-               content TEXT,
-               weight REAL,
-               status TEXT
+    def create_table(self):
+        # Create a table with columns
+        self.cur.execute("""
+            CREATE TABLE IF NOT EXISTS shipment (
+                id INTEGER PRIMARY KEY,
+                content TEXT,
+                weight REAL,
+                status TEXT
             )
-""",
-            (name,),
-        )
+        """)
 
     def create(self, shipment: ShipmentCreate) -> int:
-        # find a new id
-        self.cur.execute("SELECT max(id) FROM shipment")
+        # Find a new id
+        self.cur.execute("SELECT MAX(id) FROM shipment")
         result = self.cur.fetchone()
 
         new_id = result[0] + 1
+
         # Insert values in the table
         self.cur.execute(
             """
@@ -44,7 +42,7 @@ class Database:
                 "status": "placed",
             },
         )
-        # commit the change to the database
+        # Commit the change to the database
         self.conn.commit()
 
         return new_id
@@ -55,7 +53,7 @@ class Database:
             SELECT * FROM shipment
             WHERE id = ?
         """,
-            (id),
+            (id,),
         )
         row = self.cur.fetchone()
 
@@ -70,16 +68,13 @@ class Database:
             else None
         )
 
-    def update(self, shipment: ShipmentUpdate) -> dict[str, Any]:
+    def update(self, id: int, shipment: ShipmentUpdate) -> dict[str, Any]:
         self.cur.execute(
             """
             UPDATE shipment SET status = :status
             WHERE id = :id
         """,
-            {
-                "id": id,
-                **shipment.model_dump(),
-            },
+            {"id": id, **shipment.model_dump()},
         )
         self.conn.commit()
 
@@ -96,4 +91,5 @@ class Database:
         self.conn.commit()
 
     def close(self):
-        self.conn.close
+        print("...connection closed")
+        self.conn.close()
