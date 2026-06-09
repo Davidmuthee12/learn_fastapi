@@ -19,11 +19,11 @@ cursor.execute("""
 # connection.commit()
 
 # 2. Add shipment data
-cursor.execute("""
-    INSERT INTO shipment
-    VALUES (1241, 'Missile', 18.5, 'placed')
-""")
-connection.commit()
+# cursor.execute("""
+#     INSERT INTO shipment
+#     VALUES (1241, 'Missile', 18.5, 'placed')
+# """)
+# connection.commit()
 
 # 3. Read a shipment by id
 # cursor.execute("""
@@ -39,6 +39,13 @@ connection.commit()
 #     WHERE id = 1243
 # """)
 # connection.commit()
+
+# 5. Update a shipment
+cursor.execute("""
+    UPDATE shipment SET status = 'in_transit'
+    WHERE id = 1241
+""")
+connection.commit()
 
 # close the connection when done
 connection.close()
