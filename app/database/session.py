@@ -10,10 +10,10 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
 )
 
-from .models import Shipment
-
 
 def create_db_tables():
+    from app.schemas import Shipment
+
     SQLModel.metadata.create_all(bind=engine)
 
 

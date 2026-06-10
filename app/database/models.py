@@ -11,12 +11,12 @@ class ShipmentStatus(str, Enum):
     delivered = "delivered"
 
 
-class Shipment(SQLModel, table=True):
-    __tablename__ = "shipment"
+# class Shipment(SQLModel, table=True):
+#     __tablename__ = "shipment"
 
-    id: int = Field(default=None, primary_key=True)
-    content: str
-    weight: float = Field(le=25)
-    destination: int
-    status: ShipmentStatus
-    estimated_delivery: datetime
+#     id: int = Field(default=None, primary_key=True)
+#     content: str
+#     weight: float = Field(le=25)
+#     destination: int
+#     status: ShipmentStatus
+#     estimated_delivery: datetime

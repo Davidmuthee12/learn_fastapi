@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
 
-from app.database.models import Shipment, ShipmentStatus
+from app.database.models import ShipmentStatus
 from app.database.session import SessionDep, create_db_tables
 
-from .schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
+from .schemas import ShipmentCreate, Shipment, ShipmentUpdate
 
 
 @asynccontextmanager
@@ -24,7 +24,7 @@ app = FastAPI(
 
 
 ### Read a shipment by id
-@app.get("/shipment", response_model=ShipmentRead)
+@app.get("/shipment", response_model=Shipment)
 def get_shipment(id: int, session: SessionDep):
     # Check for shipment with given id
     shipment = session.get(Shipment, id)
@@ -54,7 +54,7 @@ def submit_shipment(shipment: ShipmentCreate, session: SessionDep) -> dict[str, 
 
 
 ### Update fields of a shipment
-@app.patch("/shipment", response_model=ShipmentRead)
+@app.patch("/shipment", response_model=Shipment)
 def update_shipment(id: int, shipment_update: ShipmentUpdate, session: SessionDep):
     # Update data with given fields
     update = shipment_update.model_dump(exclude_none=True)
