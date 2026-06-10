@@ -1,16 +1,17 @@
 import sqlite3
 from typing import Any
+from contextlib import contextmanager
 
 from app.schemas import ShipmentCreate, ShipmentUpdate  # type: ignore
 
 
 class Database:
-    def __init__(self):
+    def connect_to_db(self):
         # Make connection with database
         self.conn = sqlite3.connect("sqlite.db", check_same_thread=False)
         # Get cursor to execute queries and fetch data
         self.cur = self.conn.cursor()
-        self.create_table()
+        print("Connected to database....")
 
     def create_table(self):
         # Create a table with columns
@@ -91,5 +92,37 @@ class Database:
         self.conn.commit()
 
     def close(self):
-        print("...connection closed")
+        print("....connection closed")
         self.conn.close()
+
+    # def __enter__(self):
+    #     print("enter the context")
+    #     self.connect_to_db()
+    #     self.create_table()
+    #     return self
+
+    # def __exit__(self, *arg):
+    #     print("exiing the context")
+    #     self.close()
+
+
+# usage
+@contextmanager
+def managed_db():
+    db = Database()
+    # setup
+    print("enter setup")
+    db.connect_to_db()
+    db.create_table()
+
+    yield db
+
+    print("exit the context")
+
+    # Dispose
+    db.close()
+
+
+with managed_db() as db:
+    print(db.get(1241))
+    print(db.get(1242))
