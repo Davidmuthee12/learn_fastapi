@@ -1,3 +1,4 @@
+from datetime import datetime
 from random import randint
 from enum import Enum
 
@@ -9,11 +10,12 @@ from app.database.models import ShipmentStatus
 class BaseShipment(BaseModel):
     content: str
     weight: float = Field(le=25)
-    # destination: int
+    destination: int
 
 
 class ShipmentRead(BaseShipment):
     status: ShipmentStatus
+    estimated_delivery: datetime
 
 
 class ShipmentCreate(BaseShipment):
@@ -21,4 +23,5 @@ class ShipmentCreate(BaseShipment):
 
 
 class ShipmentUpdate(BaseModel):
-    status: ShipmentStatus
+    status: ShipmentStatus | None = Field(default=None)
+    estimated_delivery: datetime | None = Field(default=None)

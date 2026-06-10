@@ -1,3 +1,5 @@
+from typing import Annotated
+from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlmodel import SQLModel, Session
 
@@ -18,3 +20,6 @@ def create_db_tables():
 def get_session():
     with Session(bind=engine) as session:
         yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
