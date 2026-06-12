@@ -1,7 +1,7 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from passlib.context import CryptContext
-
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 from app.api.schemas.seller import SellerCreate
 from app.database.models import Seller
 
@@ -24,3 +24,16 @@ class SellerService:
         await self.session.refresh(seller)
 
         return seller
+
+    async def token(self, email, password) -> str:
+        # validate the credentials
+        result = await self.session.execute(
+            select(Seller).Where(Seller.email == email),
+        )
+        seller = result.scalar()
+
+        if seller is None:
+            raise HTTPException(
+                status=status.HTTP_404_NOT_FOUND,
+                detail="seller with given email is not found",
+            )
