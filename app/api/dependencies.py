@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from app.utils import decode_access_token
 from app.database.models import Seller
+from app.database.redis import is_jti_blacklisted
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import oauth2_scheme
@@ -16,10 +17,10 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 # Asynchronous database session dep annotation
-def get_access_token(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_access_token(token: Annotated[str, Depends(oauth2_scheme)]):
     data = decode_access_token(token)
 
-    if data is None:
+    if data is None or await is_jti_blacklisted(data["jti"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired access token",

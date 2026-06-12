@@ -8,7 +8,7 @@ from app.config import security_settings
 
 def generate_access_token(
     data: dict,
-    expiry: timedelta = timedelta(seconds=40),
+    expiry: timedelta = timedelta(days=3),
 ) -> str:
     return jwt.encode(
         payload={

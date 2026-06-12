@@ -3,8 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import oauth2_scheme
+from app.database.redis import add_jti_to_blacklist
 
-from ..dependencies import SellerServiceDep
+from ..dependencies import SellerServiceDep, get_access_token
 from ..schemas.seller import SellerCreate, SellerRead
 
 router = APIRouter(prefix="/seller", tags=["Seller"])
@@ -32,6 +33,9 @@ async def login_seller(
 ### Logout the seller
 @router.get("/logout")
 async def logout_seller(
-    token_data: Annotated[str, Depends(oauth2_scheme)],
+    token_data: Annotated[dict, Depends(get_access_token)],
 ):
-    token_data["jti"]
+    await add_jti_to_blacklist(token_data["jti"])
+    return {
+        "detail": "Successfully logged out",
+    }
