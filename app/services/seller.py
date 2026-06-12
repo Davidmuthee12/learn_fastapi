@@ -1,10 +1,11 @@
-from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from passlib.context import CryptContext
 
 from app.api.schemas.seller import SellerCreate
 from app.database.models import Seller
 
-password_context = CryptContext(schemes=["bcrypt"])
+password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class SellerService:

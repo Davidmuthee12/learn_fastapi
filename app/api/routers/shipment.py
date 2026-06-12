@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException, status
 
-from ..dependencies import ServiceDep
+from ..dependencies import ShipmentServiceDep
 from ..schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
 
-# api router to group endpoints
+
 router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
 
 ### Read a shipment by id
 @router.get("/", response_model=ShipmentRead)
-async def get_shipment(id: int, service: ServiceDep):
+async def get_shipment(id: int, service: ShipmentServiceDep):
     # Check for shipment with given id
     shipment = await service.get(id)
 
@@ -26,7 +26,7 @@ async def get_shipment(id: int, service: ServiceDep):
 @router.post("/", response_model=ShipmentRead)
 async def submit_shipment(
     shipment: ShipmentCreate,
-    service: ServiceDep,
+    service: ShipmentServiceDep,
 ):
     return await service.add(shipment)
 
@@ -36,7 +36,7 @@ async def submit_shipment(
 async def update_shipment(
     id: int,
     shipment_update: ShipmentUpdate,
-    service: ServiceDep,
+    service: ShipmentServiceDep,
 ):
     # Update data with given fields
     update = shipment_update.model_dump(exclude_none=True)
@@ -52,7 +52,7 @@ async def update_shipment(
 
 ### Delete a shipment by id
 @router.delete("/")
-async def delete_shipment(id: int, service: ServiceDep) -> dict[str, str]:
+async def delete_shipment(id: int, service: ShipmentServiceDep) -> dict[str, str]:
     # Remove from database
     await service.delete(id)
 
