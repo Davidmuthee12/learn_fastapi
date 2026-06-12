@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from ..dependencies import ShipmentServiceDep
+from ..dependencies import SellerDep, ShipmentServiceDep
 from ..schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
 
 
@@ -25,6 +25,7 @@ async def get_shipment(id: int, service: ShipmentServiceDep):
 ### Create a new shipment with content and weight
 @router.post("/", response_model=ShipmentRead)
 async def submit_shipment(
+    seller: SellerDep,
     shipment: ShipmentCreate,
     service: ShipmentServiceDep,
 ):
