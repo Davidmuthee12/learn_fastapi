@@ -1,13 +1,10 @@
-from datetime import datetime, timedelta
-
-import jwt
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
+from app.utils import generate_access_token
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.seller import SellerCreate
-from app.config import security_settings
 from app.database.models import Seller
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -46,16 +43,13 @@ class SellerService:
                 detail="Email or password is incorrect",
             )
 
-        token = jwt.encode(
-            payload={
+        token = generate_access_token(
+            data={
                 "user": {
                     "name": seller.name,
                     "email": seller.email,
-                },
-                "exp": datetime.now() + timedelta(days=1),
-            },
-            algorithm=security_settings.JWT_ALGORITHM,
-            key=security_settings.JWT_SECRET,
+                }
+            }
         )
 
         return token
