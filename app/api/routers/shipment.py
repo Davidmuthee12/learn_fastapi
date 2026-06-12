@@ -9,7 +9,7 @@ router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
 ### Read a shipment by id
 @router.get("/", response_model=ShipmentRead)
-async def get_shipment(id: int, service: ShipmentServiceDep):
+async def get_shipment(id: int, _: SellerDep, service: ShipmentServiceDep):
     # Check for shipment with given id
     shipment = await service.get(id)
 
