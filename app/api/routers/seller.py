@@ -1,13 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-
 from app.core.security import oauth2_scheme
-from app.utils import decode_access_token
-from app.database.models import Seller
 
-from ..dependencies import SellerServiceDep, SessionDep
+from ..dependencies import SellerServiceDep
 from ..schemas.seller import SellerCreate, SellerRead
 
 router = APIRouter(prefix="/seller", tags=["Seller"])
@@ -30,3 +27,11 @@ async def login_seller(
         "access_token": token,
         "type": "jwt",
     }
+
+
+### Logout the seller
+@router.get("/logout")
+async def logout_seller(
+    token_data: Annotated[str, Depends(oauth2_scheme)],
+):
+    token_data["jti"]
