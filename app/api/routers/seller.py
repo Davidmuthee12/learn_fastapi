@@ -5,8 +5,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.security import oauth2_scheme
 from app.utils import decode_access_token
+from app.database.models import Seller
 
-from ..dependencies import SellerServiceDep
+from ..dependencies import SellerServiceDep, SessionDep
 from ..schemas.seller import SellerCreate, SellerRead
 
 router = APIRouter(prefix="/seller", tags=["Seller"])
@@ -34,7 +35,8 @@ async def login_seller(
 @router.get("/dashboard")
 async def get_dashboard(
     token: Annotated[str, Depends(oauth2_scheme)],
-):
+    session: SessionDep,
+) -> Seller:
     data = decode_access_token(token)
 
     if data is None:
@@ -43,6 +45,6 @@ async def get_dashboard(
             detail="Invalid access token",
         )
 
-    return {
-        "detail": "Successfully Authenticated",
-    }
+    seller = await session.get(Seller, data["user"]["id"])
+
+    return seller
