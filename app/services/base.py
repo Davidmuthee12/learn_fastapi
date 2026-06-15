@@ -1,7 +1,6 @@
 from uuid import UUID
-
-from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import SQLModel
 
 
 class BaseService:
@@ -19,7 +18,7 @@ class BaseService:
         return entity
 
     async def _update(self, entity: SQLModel):
-        return await self._create(entity)
+        return await self._add(entity)
 
     async def _delete(self, entity: SQLModel):
         await self.session.delete(entity)

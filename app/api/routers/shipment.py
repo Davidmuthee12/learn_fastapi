@@ -1,8 +1,7 @@
 from uuid import UUID
-
 from fastapi import APIRouter, HTTPException, status
 
-from ..dependencies import SellerDep, ShipmentServiceDep
+from ..dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
 from ..schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
 
 
@@ -24,7 +23,7 @@ async def get_shipment(id: UUID, service: ShipmentServiceDep):
     return shipment
 
 
-### Create a new shipment with content and weight
+### Create a new shipment
 @router.post("/", response_model=ShipmentRead)
 async def submit_shipment(
     seller: SellerDep,
@@ -37,8 +36,9 @@ async def submit_shipment(
 ### Update fields of a shipment
 @router.patch("/", response_model=ShipmentRead)
 async def update_shipment(
-    id: int,
+    id: UUID,
     shipment_update: ShipmentUpdate,
+    partner: DeliveryPartnerDep,
     service: ShipmentServiceDep,
 ):
     # Update data with given fields
@@ -50,12 +50,24 @@ async def update_shipment(
             detail="No data provided to update",
         )
 
-    return await service.update(id, update)
+    # Validate logged in parter with assigned partner
+    # on the shipment with given id
+    shipment = await service.get(id)
+
+    if shipment.delivery_partner_id != partner.id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authorized",
+        )
+
+    return await service.update(
+        shipment.sqlmodel_update(shipment_update),
+    )
 
 
 ### Delete a shipment by id
 @router.delete("/")
-async def delete_shipment(id: int, service: ShipmentServiceDep) -> dict[str, str]:
+async def delete_shipment(id: UUID, service: ShipmentServiceDep) -> dict[str, str]:
     # Remove from database
     await service.delete(id)
 

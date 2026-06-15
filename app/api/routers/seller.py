@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core.security import oauth2_scheme
+
 from app.database.redis import add_jti_to_blacklist
 
 from ..dependencies import SellerServiceDep, get_seller_access_token

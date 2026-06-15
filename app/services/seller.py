@@ -17,7 +17,7 @@ class SellerService(UserService):
 
     async def add(self, seller_create: SellerCreate) -> Seller:
         return await self._add_user(
-            **seller_create.model_dump(),
+            seller_create.model_dump(),
         )
 
     async def token(self, email, password) -> str:

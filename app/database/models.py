@@ -115,7 +115,7 @@ class DeliveryPartner(User, table=True):
         return [
             shipment
             for shipment in self.shipments
-            if shipment.status == ShipmentStatus.delivered
+            if shipment.status != ShipmentStatus.delivered
         ]
 
     @property

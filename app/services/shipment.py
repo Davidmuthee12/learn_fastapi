@@ -31,19 +31,19 @@ class ShipmentService(BaseService):
             estimated_delivery=datetime.now() + timedelta(days=3),
             seller_id=seller.id,
         )
-        self.partner_service.assign_shipment(new_shipment)
+        # Assign delivery partner to the shipment
+        partner = await self.partner_service.assign_shipment(
+            new_shipment,
+        )
+        # Add the delivery partner foreign key
+        new_shipment.delivery_partner_id = partner.id
 
         return await self._add(new_shipment)
 
     # Update an existing shipment
-    async def update(self, id: int, shipment_update: dict) -> Shipment:
-        shipment = await self.get(id)
-        shipment.sqlmodel_update(shipment_update)
-
-        shipment = await self._update(shipment)
-
-        return shipment
+    async def update(self, shipment: Shipment) -> Shipment:
+        return await self._update(shipment)
 
     # Delete a shipment
     async def delete(self, id: int) -> None:
-        self._delete(self.get(id))
+        await self._delete(await self.get(id))
