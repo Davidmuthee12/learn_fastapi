@@ -38,13 +38,15 @@ async def login_delivery_partner(
 
 
 ### Update delivery partner
-@router.post("/")
+@router.post("/", response_model=DeliveryPartnerRead)
 async def update_delivery_partner(
     partner_update: DeliveryPartnerUpdate,
     partner: DeliveryPartnerRead,
     service,
 ):
-    pass
+    return await service.update(
+        partner.sqlmodel_update(partner_update),
+    )
 
 
 ### Logout the delivery partner
