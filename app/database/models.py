@@ -1,12 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
-
-from sqlmodel import Field, SQLModel, Relationship, Column
+from pydantic import EmailStr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import ARRAY, INTEGER
-from pydantic import EmailStr
+from sqlmodel import Column, Field, Relationship, SQLModel
 
 
 class ShipmentStatus(str, Enum):
@@ -32,6 +31,7 @@ class Shipment(SQLModel, table=True):
             default=datetime.now,
         )
     )
+
     content: str
     weight: float = Field(le=25)
     destination: int
@@ -100,12 +100,12 @@ class DeliveryPartner(User, table=True):
         )
     )
 
-    servicable_zip_codes: list[int] = Field(
+    serviceable_zip_codes: list[int] = Field(
         sa_column=Column(ARRAY(INTEGER)),
     )
     max_handling_capacity: int
 
-    Shipments: list[Shipment] = Relationship(
+    shipments: list[Shipment] = Relationship(
         back_populates="delivery_partner",
         sa_relationship_kwargs={"lazy": "selectin"},
     )
