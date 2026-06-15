@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import oauth2_scheme
 from app.database.redis import add_jti_to_blacklist
 
-from ..dependencies import SellerServiceDep, get_access_token
+from ..dependencies import SellerServiceDep, get_seller_access_token
 from ..schemas.seller import SellerCreate, SellerRead
 
 router = APIRouter(prefix="/seller", tags=["Seller"])
@@ -33,7 +33,7 @@ async def login_seller(
 ### Logout the seller
 @router.get("/logout")
 async def logout_seller(
-    token_data: Annotated[dict, Depends(get_access_token)],
+    token_data: Annotated[dict, Depends(get_seller_access_token)],
 ):
     await add_jti_to_blacklist(token_data["jti"])
     return {
