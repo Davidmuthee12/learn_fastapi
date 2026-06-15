@@ -1,19 +1,21 @@
 from datetime import datetime, timedelta
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.shipment import ShipmentCreate
 from app.database.models import Seller, Shipment, ShipmentStatus
 
+from .base import BaseService
 
-class ShipmentService:
+
+class ShipmentService(BaseService):
     def __init__(self, session: AsyncSession):
-        # Get database session to perform database operations
-        self.session = session
+        super().__init__(Shipment, session)
 
     # Get a shipment by id
-    async def get(self, id: int) -> Shipment:
-        return await self.session.get(Shipment, id)
+    async def get(self, id: UUID) -> Shipment | None:
+        return await self._get(id)
 
     # Add a new shipment
     async def add(self, shipment_create: ShipmentCreate, seller: Seller) -> Shipment:
@@ -23,24 +25,19 @@ class ShipmentService:
             estimated_delivery=datetime.now() + timedelta(days=3),
             seller_id=seller.id,
         )
-        self.session.add(new_shipment)
-        await self.session.commit()
-        await self.session.refresh(new_shipment)
+        shipment = await self._add(new_shipment)
 
-        return new_shipment
+        return shipment
 
     # Update an existing shipment
     async def update(self, id: int, shipment_update: dict) -> Shipment:
         shipment = await self.get(id)
         shipment.sqlmodel_update(shipment_update)
 
-        self.session.add(shipment)
-        await self.session.commit()
-        await self.session.refresh(shipment)
+        shipment = await self._update(shipment)
 
         return shipment
 
     # Delete a shipment
     async def delete(self, id: int) -> None:
-        await self.session.delete(await self.get(id))
-        await self.session.commit()
+        self._delete(self.get(id))
