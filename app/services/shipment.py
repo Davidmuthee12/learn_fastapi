@@ -44,13 +44,14 @@ class ShipmentService(BaseService):
 
         shipment = await self._add(new_shipment)
 
-        await self.event_service.add(
+        event = await self.event_service.add(
             shipment=shipment,
             location=seller.zip_code,
             status=ShipmentStatus.placed,
             description=f"assigned to {partner.name}",
         )
 
+        shipment.timeline.append(event)
         return shipment
 
     # Update an existing shipment
