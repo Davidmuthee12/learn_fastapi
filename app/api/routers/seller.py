@@ -37,11 +37,18 @@ async def verify_seller_email(token: str, service: SellerServiceDep):
     return {"detail": "Account verified"}
 
 
-### Email Password reset Link
+### Email Password Reset Link
 @router.get("/forgot_password")
 async def forgot_password(email: EmailStr, service: SellerServiceDep):
     await service.send_password_reset_link(email, router.prefix)
     return {"detail": "Check email for password reset link"}
+
+
+### Reset password Endpoint
+@router.get("/reset_password")
+async def reset_password(token: str, password: str, service: SellerServiceDep):
+    await service.reset_password(token, password)
+    return {"detail": "Password reset is succesfull"}
 
 
 ### Logout the seller
