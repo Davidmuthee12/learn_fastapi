@@ -7,6 +7,11 @@ _base_config = SettingsConfigDict(
 )
 
 
+class AppSettings(BaseSettings):
+    APP_NAME: str = "FastShip"
+    APP_DOMAIN: str = "localhost:8000"
+
+
 class DatabaseSettings(BaseSettings):
     POSTGRES_SERVER: str
     POSTGRES_PORT: int
@@ -46,6 +51,7 @@ class NotificationSettings(BaseSettings):
     model_config = _base_config
 
 
+app_settings = AppSettings()
 db_settings = DatabaseSettings()
 security_settings = SecuritySettings()
 notification_settings = NotificationSettings()
