@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.shipment import ShipmentCreate, ShipmentUpdate
 from app.database.models import DeliveryPartner, Seller, Shipment, ShipmentStatus
+from app.database.redis import get_shipment_verification_code
 from app.services.shipment_event import ShipmentEventService
 
 from .base import BaseService
@@ -42,16 +43,19 @@ class ShipmentService(BaseService):
         # Add the delivery partner foreign key
         new_shipment.delivery_partner_id = partner.id
 
-        shipment = await self._add(new_shipment)
+        shipment: Shipment = await self._add(new_shipment)
 
         event = await self.event_service.add(
             shipment=shipment,
-            location=seller.zip_code,
+            location=seller.zip_code
+            if seller.zip_code is not None
+            else shipment.destination,
             status=ShipmentStatus.placed,
             description=f"assigned to {partner.name}",
         )
 
         shipment.timeline.append(event)
+
         return shipment
 
     # Update an existing shipment
@@ -71,7 +75,19 @@ class ShipmentService(BaseService):
                 detail="Not authorized",
             )
 
-        update = shipment_update.model_dump(exclude_none=True)
+        if shipment_update.status == ShipmentStatus.delivered:
+            code = await get_shipment_verification_code(shipment.id)
+
+            if code != shipment_update.verification_code:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Client not authorized",
+                )
+
+        update = shipment_update.model_dump(
+            exclude_none=True,
+            exclude=["verification_code"],
+        )
 
         if shipment_update.estimated_delivery:
             shipment.estimated_delivery = shipment_update.estimated_delivery
@@ -103,5 +119,5 @@ class ShipmentService(BaseService):
         return shipment
 
     # Delete a shipment
-    async def delete(self, id: int) -> None:
+    async def delete(self, id: UUID) -> None:
         await self._delete(await self.get(id))
