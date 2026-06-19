@@ -10,26 +10,12 @@ from ..schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
 
 router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
+
 templates = Jinja2Templates(TEMPLATE_DIR)
 
 
-### Read a shipment by id
-@router.get("/", response_model=ShipmentRead)
-async def get_shipment(id: UUID, service: ShipmentServiceDep):
-    # Check for shipment with given id
-    shipment = await service.get(id)
-
-    if shipment is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Given id doesn't exist!",
-        )
-
-    return shipment
-
-
 ### Tracking details of shipment
-@router.get("/track", include_in_schema=False)
+@router.get("/track")
 async def get_tracking(request: Request, id: UUID, service: ShipmentServiceDep):
     # Check for shipment with given id
     shipment = await service.get(id)
@@ -45,6 +31,21 @@ async def get_tracking(request: Request, id: UUID, service: ShipmentServiceDep):
         name="track.html",
         context=context,
     )
+
+
+### Read a shipment by id
+@router.get("/", response_model=ShipmentRead)
+async def get_shipment(id: UUID, service: ShipmentServiceDep):
+    # Check for shipment with given id
+    shipment = await service.get(id)
+
+    if shipment is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Given id doesn't exist!",
+        )
+
+    return shipment
 
 
 ### Create a new shipment
@@ -74,19 +75,14 @@ async def update_shipment(
             detail="No data provided to update",
         )
 
-    return await service.update(
-        id,
-        shipment_update,
-        partner,
-    )
+    return await service.update(id, shipment_update, partner)
 
 
-### cancel a shipment by id
+### Cancel a shipment by id
 @router.get("/cancel", response_model=ShipmentRead)
 async def cancel_shipment(
     id: UUID,
     seller: SellerDep,
     service: ShipmentServiceDep,
-) -> dict[str, str]:
-    # Remove from database
+):
     return await service.cancel(id, seller)
