@@ -87,23 +87,24 @@ async def get_current_partner(
 # Shipment service dep
 def get_shipment_service(
     session: SessionDep,
-    tasks: BackgroundTasks,
 ):
     return ShipmentService(
         session,
-        DeliveryPartnerService(session, tasks),
-        ShipmentEventService(session, tasks),
+        DeliveryPartnerService(session),
+        ShipmentEventService(session),
     )
 
 
 # Seller service dep
-def get_seller_service(session: SessionDep, tasks: BackgroundTasks):
-    return SellerService(session, tasks)
+def get_seller_service(
+    session: SessionDep,
+):
+    return SellerService(session)
 
 
 # Delivery partner service dep
-def get_delivery_partner_service(session: SessionDep, tasks: BackgroundTasks):
-    return DeliveryPartnerService(session, tasks)
+def get_delivery_partner_service(session: SessionDep):
+    return DeliveryPartnerService(session)
 
 
 # Seller dep annotation

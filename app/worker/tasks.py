@@ -1,8 +1,16 @@
-from celery import Celery
+import logging
+
 from asgiref.sync import async_to_sync
+from celery import Celery
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+from pydantic import EmailStr
+from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
+
 from app.config import db_settings, notification_settings
 from app.utils import TEMPLATE_DIR
+
+logger = logging.getLogger(__name__)
 
 fast_mail = FastMail(
     ConnectionConfig(
@@ -13,12 +21,19 @@ fast_mail = FastMail(
     )
 )
 
+twilio_client = Client(
+    notification_settings.TWILIO_SID,
+    notification_settings.TWILIO_AUTH_TOKEN,
+)
+
 send_message = async_to_sync(fast_mail.send_message)
+
 
 app = Celery(
     "api_tasks",
     broker=db_settings.REDIS_URL(9),
     backend=db_settings.REDIS_URL(9),
+    broker_connection_retry_on_startup=True,
 )
 
 
@@ -34,6 +49,39 @@ def send_mail(
             subject=subject,
             body=body,
             subtype=MessageType.plain,
-        )
+        ),
     )
     return "Message Sent!"
+
+
+@app.task
+def send_email_with_template(
+    recipients: list[EmailStr],
+    subject: str,
+    context: dict,
+    template_name: str,
+):
+    send_message(
+        message=MessageSchema(
+            recipients=recipients,
+            subject=subject,
+            template_body=context,
+            subtype=MessageType.html,
+        ),
+        template_name=template_name,
+    )
+
+
+@app.task
+def send_sms(to: str, body: str):
+    try:
+        twilio_client.messages.create(
+            from_=notification_settings.TWILIO_NUMBER,
+            to=to,
+            body=body,
+        )
+    except TwilioRestException as exc:
+        logger.warning("SMS delivery failed for %s: %s", to, exc)
+        return False
+
+    return True
