@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
+from time import perf_counter
 
-from fastapi import FastAPI, BackgroundTasks
-from fastapi.responses import JSONResponse
-from app.core.exceptions import InvalidToken, add_exception_handlers
-from app.services.notification import NotificationService
+from fastapi import BackgroundTasks, FastAPI, Request, Response
 from scalar_fastapi import get_scalar_api_reference
 
 from app.api.router import master_router
+from app.core.exceptions import add_exception_handlers
 from app.database.session import create_db_tables
+from app.services.notification import NotificationService
+from app.worker.tasks import add_log
 
 
 @asynccontextmanager
@@ -20,6 +21,23 @@ app = FastAPI()
 app.include_router(master_router)
 
 add_exception_handlers(app)
+
+
+# Add custom middleware
+@app.middleware("http")
+async def custom_middleware(request: Request, call_next):
+    start = perf_counter()
+
+    response: Response = await call_next(request)
+
+    end = perf_counter()
+    time_taken = round(end - start, 2)
+
+    add_log.delay(
+        f"{request.method} {request.url} ({response.status_code}) {time_taken} s"
+    )
+
+    return response
 
 
 @app.get("/mail")
