@@ -1,13 +1,13 @@
 from contextlib import asynccontextmanager
 from time import perf_counter
 
-from fastapi import BackgroundTasks, FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from scalar_fastapi import get_scalar_api_reference
 
 from app.api.router import master_router
 from app.core.exceptions import add_exception_handlers
 from app.database.session import create_db_tables
-from app.services.notification import NotificationService
 from app.worker.tasks import add_log
 
 
@@ -18,6 +18,13 @@ async def lifespan_handler(app: FastAPI):
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5500"],
+    allow_methods=["*"],
+)
+
 app.include_router(master_router)
 
 add_exception_handlers(app)
@@ -38,19 +45,6 @@ async def custom_middleware(request: Request, call_next):
     )
 
     return response
-
-
-@app.get("/mail")
-async def send_test_mail(tasks: BackgroundTasks):
-
-    tasks.add_task(
-        NotificationService(tasks).send_email,
-        recipients=["pyzegv@mailto.plus"],
-        subject="Test mail coming through once",
-        body="Hello this is vladmir. I eat fluffy dolls and terdy bears for funn. hwahwha😂😂😒",
-    )
-
-    return {"detail": "Sending mail..."}
 
 
 ### Scalar API Documentation
