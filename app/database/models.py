@@ -64,7 +64,7 @@ class Tag(SQLModel, table=True):
     shipments: list["Shipment"] = Relationship(
         back_populates="tags",
         link_model=ShipmentTag,
-        sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={"lazy": "immediate"},
     )
 
 
@@ -120,7 +120,7 @@ class Shipment(SQLModel, table=True):
     tags: list[Tag] = Relationship(
         back_populates="shipments",
         link_model=ShipmentTag,
-        sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={"lazy": "immediate"},
     )
 
     @property
