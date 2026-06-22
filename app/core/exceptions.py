@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
 
 
 class FastShipError(Exception):
@@ -88,4 +89,14 @@ def add_exception_handlers(app: FastAPI):
                 status=exception_class.status,
                 detail=exception_class.__doc__,
             ),
+        )
+
+    @app.exception_handler(status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def internal_server_error_handler(request, exception):
+        return JSONResponse(
+            content={"detail": "Something went wrong..."},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            headers={
+                "X-Error": f"{exception}",
+            },
         )
