@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from app.database.models import TagName
 from app.utils import TEMPLATE_DIR
 
-from ..dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
+from ..dependencies import DeliveryPartnerDep, SellerDep, SessionDep, ShipmentServiceDep
 from ..schemas.shipment import (
     ShipmentCreate,
     ShipmentRead,
@@ -84,6 +84,16 @@ async def update_shipment(
         )
 
     return await service.update(id, shipment_update, partner)
+
+
+### Get all shipment with a tag
+@router.get("/tagged", response_model=list[ShipmentRead])
+async def get_shipment_with_tag(
+    tag_name: TagName,
+    session: SessionDep,
+):
+    tag = await tag_name.tag(session)
+    return tag.shipments
 
 
 ### Add a tag to a shipment
