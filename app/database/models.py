@@ -8,12 +8,58 @@ from sqlalchemy import ARRAY, INTEGER
 from sqlmodel import Column, Field, Relationship, SQLModel
 
 
+class TagName(str, Enum):
+    Express = "express"
+    STANDARD = "standard"
+    FRAGILE = "fragile"
+    HEAVY = "heavy"
+    INTERNATIONAL = "international"
+    DOMESTIC = "domestic"
+    TEMPERATURE_CONTROLLED = "temperature_controlled"
+    GIFT = "gift"
+    RETURN = "return"
+    DOCUMENTS = "documents"
+
+
 class ShipmentStatus(str, Enum):
     placed = "placed"
     in_transit = "in_transit"
     out_for_delivery = "out_for_delivery"
     delivered = "delivered"
     cancelled = "cancelled"
+
+
+class ShipmentTag(SQLModel, table=True):
+    __tablename__ = "shipment_tag"
+
+    shipment_id: UUID = Field(
+        foreign_key="shipment.id",
+        primary_key=True,
+    )
+    tag_id: UUID = Field(
+        foreign_key="tag.id",
+        primary_key=True,
+    )
+
+
+class Tag(SQLModel, table=True):
+    __tablename__ = "tag"
+
+    id: UUID = Field(
+        sa_column=Column(
+            postgresql.UUID,
+            default=uuid4,
+            primary_key=True,
+        )
+    )
+    name: TagName
+    instructions: str
+
+    shipment: list["Shipment"] = Relationship(
+        back_populates="tags",
+        link_model=ShipmentTag,
+        sa_relationship_kwargs={"lazy": "selectin"},
+    )
 
 
 class Shipment(SQLModel, table=True):
@@ -62,6 +108,12 @@ class Shipment(SQLModel, table=True):
 
     review: "Review" = Relationship(
         back_populates="shipment",
+        sa_relationship_kwargs={"lazy": "selectin"},
+    )
+
+    tags: list[Tag] = Relationship(
+        back_populates="shipments",
+        link_model=ShipmentTag,
         sa_relationship_kwargs={"lazy": "selectin"},
     )
 
