@@ -78,6 +78,11 @@ async def custom_middleware(request: Request, call_next):
     return response
 
 
+@app.get("/")
+def read_root():
+    return {"detail": "server is running...."}
+
+
 ### Scalar API Documentation
 @app.get("/scalar", include_in_schema=False)
 def get_scalar_docs():
