@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, Request, status
 from fastapi.templating import Jinja2Templates
 
 from app.api.tag import APITag
@@ -24,7 +24,7 @@ templates = Jinja2Templates(TEMPLATE_DIR)
 
 
 ### Tracking details of shipment
-@router.get("/track")
+@router.get("/track", include_in_schema=False)
 async def get_tracking(request: Request, id: UUID, service: ShipmentServiceDep):
     # Check for shipment with given id
     shipment = await service.get(id)
@@ -50,7 +50,21 @@ async def get_shipment(id: UUID, service: ShipmentServiceDep):
 
 
 ### Create a new shipment
-@router.post("/", response_model=ShipmentRead)
+@router.post(
+    "/",
+    response_model=ShipmentRead,
+    name="Create Shipment",
+    description="Submit a new shipment",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Shipment created",
+        },
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "description": "Delivery Partner is not available"
+        },
+    },
+)
 async def submit_shipment(
     seller: SellerDep,
     shipment: ShipmentCreate,
