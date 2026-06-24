@@ -24,11 +24,17 @@ Delivery Management System for sellers and agents
 - Email and SMS notification
 """
 
+
+def custom_generate_unique_id_function(route: APIRoute) -> str:
+    return route.name
+
+
 app = FastAPI(
     title="FastShip",
     description=description,
     version="0.1.0",
     terms_of_service="https://fastapi.tiangolo.com/terms/",
+    generate_unique_id_function=custom_generate_unique_id_function,
     contact={
         "name": "FastShip Support",
         "url": "https://fastship.com/support",
@@ -52,8 +58,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500"],
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
     allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(master_router)
