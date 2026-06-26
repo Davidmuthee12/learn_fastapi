@@ -241,13 +241,17 @@ class DeliveryPartner(User, table=True):
         return [
             shipment
             for shipment in self.shipments
-            if shipment.status != ShipmentStatus.delivered
-            or shipment.status != ShipmentStatus.cancelled
+            if shipment.status
+            not in (ShipmentStatus.delivered, ShipmentStatus.cancelled)
         ]
 
     @property
     def current_handling_capacity(self):
         return self.max_handling_capacity - len(self.active_shipments)
+
+    @property
+    def serviceable_zip_codes(self):
+        return [location.zip_code for location in self.servicable_locations]
 
 
 class Review(SQLModel, table=True):
