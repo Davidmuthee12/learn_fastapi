@@ -17,6 +17,7 @@ from ..schemas.delivery_partner import (
     DeliveryPartnerRead,
     DeliveryPartnerUpdate,
 )
+from ..schemas.shipment import ShipmentRead
 
 router = APIRouter(prefix="/partner", tags=[APITag.PARTNER])
 
@@ -41,6 +42,18 @@ async def login_delivery_partner(
         "access_token": token,
         "type": "jwt",
     }
+
+
+### Get logged in delivery partner profile
+@router.get("/me", response_model=DeliveryPartnerRead)
+async def get_delivery_partner_profile(partner: DeliveryPartnerDep):
+    return partner
+
+
+### Get logged in delivery partner shipments
+@router.get("/shipments", response_model=list[ShipmentRead])
+async def get_shipments(partner: DeliveryPartnerDep):
+    return partner.shipments
 
 
 ### Update the logged in delivery partner
