@@ -1,0 +1,25 @@
+services:
+  fastship:
+    build: .
+    env_file:
+      - .env
+    environment:
+      POSTGRES_SERVER: db
+      REDIS_HOST: redis
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "47hpwg.postgres"
+      POSTGRES_DB: "fastship"
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
