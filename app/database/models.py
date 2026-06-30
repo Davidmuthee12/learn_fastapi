@@ -4,7 +4,6 @@ from uuid import UUID, uuid4
 
 from pydantic import EmailStr
 from sqlalchemy.dialects import postgresql
-from sqlalchemy import ARRAY, INTEGER
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import Column, Field, Relationship, SQLModel, select
 
